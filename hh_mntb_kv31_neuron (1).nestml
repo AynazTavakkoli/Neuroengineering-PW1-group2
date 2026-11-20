@@ -1,0 +1,87 @@
+model hh_mntb_kv31_neuron:
+
+    state:
+        V_m mV = -64.5 mV
+
+        Act_n real   = 0.0945   # attivazione I_Kv3 (Kv3.1)
+        Inact_p real = 1.0      # inattivazione parziale I_Kv3
+        Act_l real   = 0.0661   # attivazione I_LT
+        Inact_r real = 0.4475   # inattivazione I_LT
+        Act_m real   = 0.0595   # attivazione I_Na
+        Inact_h real = 0.6728   # inattivazione I_Na
+
+        refr_count integer = 0  # contatore per il rilevamento degli spike
+
+    parameters:
+        C_m pF  = 10 pF       # 0.01 nF
+        g_Na nS = 500 nS      # 0.5 uS
+        g_LT nS = 20 nS       # 0.02 uS
+        g_Kv3 nS = 150 nS      # 0.15 uS (controllo)
+        g_L nS  = 2 nS        # 0.002 uS
+
+        E_K mV  = -80 mV
+        E_Na mV = 50 mV
+        E_L mV  = -63 mV
+
+        gamma_Kv3 real = 0.2
+
+        V_spike_th mV = -10 mV
+        refr_T ms = 0.5 ms    # solo conteggio degli spike; 2 ms nasconderebbe gli spike a >= 500 Hz
+
+        tau_syn_exc ms = 0.2 ms
+        tau_syn_inh ms = 2.0 ms
+        I_e pA = 0 pA
+
+    internals:
+        refr_counts integer = steps(refr_T)
+
+    equations:
+        kernel K_syn_inh = (e/tau_syn_inh) * t * exp(-t/tau_syn_inh)
+        kernel K_syn_exc = (e/tau_syn_exc) * t * exp(-t/tau_syn_exc)
+        inline I_syn_exc pA = convolve(K_syn_exc, exc_spikes) * 1 pA
+        inline I_syn_inh pA = convolve(K_syn_inh, inh_spikes) * 1 pA
+
+        recordable inline I_Kv3 pA  = g_Kv3 * Act_n**3 * ((1 - gamma_Kv3) + gamma_Kv3 * Inact_p) * (V_m - E_K)
+        recordable inline I_LT pA   = g_LT * Act_l * Inact_r * (V_m - E_K)
+        recordable inline I_Na pA   = g_Na * Act_m**3 * Inact_h * (V_m - E_Na)
+        recordable inline I_L pA    = g_L * (V_m - E_L)
+
+        inline alpha_n real = 0.2719 * exp(0.04 * V_m / (1 mV))
+        inline beta_n real  = 0.1974
+        inline alpha_p real = 0.00713 * exp(-0.1942 * V_m / (1 mV))
+        inline beta_p real  = 0.0935 * exp(0.0058 * V_m / (1 mV))
+        inline alpha_l real = 1.2 * exp(0.03512 * V_m / (1 mV))
+        inline beta_l real  = 0.2248 * exp(-0.0319 * V_m / (1 mV))
+        inline alpha_r real = 0.0438 * exp(-0.0053 * V_m / (1 mV))
+        inline beta_r real  = 0.0562 * exp(-0.0047 * V_m / (1 mV))
+        inline alpha_m real = 76.4 * exp(0.037 * V_m / (1 mV))
+        inline beta_m real  = 6.93 * exp(-0.043 * V_m / (1 mV))
+        inline alpha_h real = 0.000533 * exp(-0.0909 * V_m / (1 mV))
+        inline beta_h real  = 7.87 * exp(0.0691 * V_m / (1 mV))
+
+        Act_n'   = (alpha_n * (1 - Act_n)     - beta_n * Act_n)     / (1 ms)
+        Inact_p' = (alpha_p * (1 - Inact_p)   - beta_p * Inact_p)   / (1 ms)
+        Act_l'   = (alpha_l * (1 - Act_l)     - beta_l * Act_l)     / (1 ms)
+        Inact_r' = (alpha_r * (1 - Inact_r)   - beta_r * Inact_r)   / (1 ms)
+        Act_m'   = (alpha_m * (1 - Act_m)     - beta_m * Act_m)     / (1 ms)
+        Inact_h' = (alpha_h * (1 - Inact_h)   - beta_h * Inact_h)   / (1 ms)
+
+        V_m' = ( -(I_Kv3 + I_LT + I_Na + I_L) + I_e + I_stim + I_syn_exc - I_syn_inh ) / C_m
+
+    input:
+        exc_spikes <- excitatory spike
+        inh_spikes <- inhibitory spike
+        I_stim pA <- continuous
+
+    output:
+        spike
+
+    update:
+        V_m_old mV = V_m
+        integrate_odes()
+
+        if refr_count > 0:
+            refr_count -= 1
+        elif V_m > V_spike_th and V_m_old > V_m:
+            refr_count = refr_counts
+            emit_spike()
