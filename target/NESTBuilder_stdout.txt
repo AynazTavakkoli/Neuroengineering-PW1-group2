@@ -1,0 +1,17 @@
+-- The CXX compiler identification is GNU 15.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /home/ciudo/anaconda3/envs/ataxia_env/bin/x86_64-conda-linux-gnu-c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (1.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/ciudo/Neuroengineering-PW1-group2/Neuroengineering-PW1-group2/target
+[ 66%] [32mBuilding CXX object CMakeFiles/nestml_184e1b19756d4162898e03fd3ed6758c_module_module.dir/hh_mntb_kv31_neuron_nestml.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/nestml_184e1b19756d4162898e03fd3ed6758c_module_module.dir/nestml_184e1b19756d4162898e03fd3ed6758c_module.cpp.o[0m
+[100%] [1m[32mLinking CXX shared module nestml_184e1b19756d4162898e03fd3ed6758c_module.so[0m
+[100%] Built target nestml_184e1b19756d4162898e03fd3ed6758c_module_module
+[100%] Built target nestml_184e1b19756d4162898e03fd3ed6758c_module_module
+[36mInstall the project...[0m
+-- Install configuration: ""
+-- Installing: /tmp/nestml_target_836aabb4/nestml_184e1b19756d4162898e03fd3ed6758c_module.so
