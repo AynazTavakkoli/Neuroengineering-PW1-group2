@@ -42,10 +42,10 @@ model hh_neuron_sca13:
 
         # Correnti Ioniche (modellate sulle equazioni del paper)
         # Il parametro gamma per I_HT è 0.1, quindi (1 - 0.1 + 0.1*p) diventa (0.9 + 0.1*p)
-        inline I_HT pA = g_Kv31 * n**3 * (0.8 + 0.2 * p) * (V_m - E_K)
-        inline I_LT pA = g_LT * l * r * (V_m - E_K)
-        inline I_Na pA = g_Na * (m**3) * h * (V_m - E_Na)
-        inline I_Leak pA = g_L * (V_m - E_L)
+        recordable inline I_HT pA = g_Kv31 * n**3 * (0.8 + 0.2 * p) * (V_m - E_K)
+        recordable inline I_LT pA = g_LT * l * r * (V_m - E_K)
+        recordable inline I_Na pA = g_Na * (m**3) * h * (V_m - E_Na)
+        recordable inline I_Leak pA = g_L * (V_m - E_L)
 
         # Cinetica I_HT (Kv3.1)
         inline alpha_n real = 0.2719 * exp(0.04 * V_m / mV)
@@ -95,7 +95,7 @@ model hh_neuron_sca13:
         else:
             integrate_odes(V_m, n, p, l, r, m, h)
 
-    onCondition(refr_t <= 0 ms and V_m > 0 mV and V_m_old > V_m):
+    onCondition(refr_t <= 0 ms and V_m > -10 mV and V_m_old > V_m):
         refr_t = refr_T
         emit_spike()
 
