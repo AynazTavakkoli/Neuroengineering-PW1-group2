@@ -1,4 +1,4 @@
-model hh_neuron_sca13:
+model hh_neuron_sca13_hWang:
     state:
         V_m mV = -63.0 mV        # Potenziale di riposo
         V_m_old mV = -63.0 mV
@@ -98,6 +98,7 @@ model hh_neuron_sca13:
     onCondition(refr_t <= 0 ms and V_m > -10 mV and V_m_old > V_m):
         refr_t = refr_T
         emit_spike()
+
 
 
 
